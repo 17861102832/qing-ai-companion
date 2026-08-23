@@ -1,0 +1,27 @@
+{
+  "author": "Github",
+  "author_icon": "https://static.marvis.qq.com/wupload/skill-author-icons/1778639349473_GitHub.png",
+  "description": "\"通用数字永生框架：从聊天记录、社交媒体、文档等多平台数据中蒸馏任何人的数字分身——支持自己、同事、导师、亲人、伴侣/前任、朋友、公众人物 7 种角色模板，接入国内外 12+ 数据平台。\"",
+  "detail_describe": "从文字记录中提取个人说话风格与价值观\n构建可对话的数字人格分身\n支持记忆更新与持续训练\n生成个人思想与经历的永久档案",
+  "display_description": "基于你的文字记录训练AI分身，让思想与个性得以永久留存",
+  "display_name": "永生.skill",
+  "download_count": 12696,
+  "download_url": "https://down.marvis.qq.com/wupload2/skill-packages/1778578572750_018-immortal-skill.zip",
+  "icon": "https://static.marvis.qq.com/wupload/skill-icons/1778578572328_%E6%8A%80%E8%83%BD%E5%9B%BE%E6%A0%87.png?imageMogr2/thumbnail/224x/format/webp",
+  "id": 207,
+  "is_downloaded": false,
+  "last_modified_time": "2026-07-16 09:27:47",
+  "md5": "bf73573f3a999e3df84844ec53c92650",
+  "name": "immortal-skill",
+  "scope": [
+    "main",
+    "file-agent"
+  ],
+  "type": "生活日常",
+  "use_cases": [
+    "帮我用这些日记文件[请上传文件]和聊天记录创建我的AI分身",
+    "我想为已故的爷爷建立一个数字记忆存档，参考这个文件[请上传文件]",
+    "生成一个能代表我说话风格的个人AI助手"
+  ],
+  "version": "1.0.3"
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "li-gong-demo",
+  "persona": "colleague",
+  "built_at": "2026-03-31T10:00:00Z",
+  "sources_summarized": [
+    "feishu:group-chat-fragments",
+    "feishu:mr-comments",
+    "feishu:release-checklist",
+    "paste:oncall-notes"
+  ],
+  "platforms": ["feishu"],
+  "kit": "immortal-skill",
+  "dimensions": ["procedure", "interaction"],
+  "fingerprints": {
+    "SKILL.md": "example-hash",
+    "procedure.md": "example-hash",
+    "interaction.md": "example-hash",
+    "conflicts.md": "example-hash"
+  }
+}

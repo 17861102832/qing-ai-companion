@@ -1,0 +1,411 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Open-LLM-Vtuber</title>
+    <script>
+      /* 小青 · 控制台良性噪音过滤器（只吞固定环境信息，真错误照常显示）
+         原因：本地预览/无麦克风环境下，op-llm-vtuber 会因浏览器限制抛这些非致命信息 */
+      (function(){
+        var BENIGN=[
+          /NotSupportedError:\s*Not supported/,
+          /Canvas is null, skipping resize/,
+          /Model or model settings not loaded yet/,
+          /skipping expression reset/
+        ];
+        function isBenign(args){
+          if(!args||!args.length) return false;
+          var s=''; for(var i=0;i<args.length;i++){ try{ s+=(args[i]&&args[i].message)?args[i].message:String(args[i]); }catch(e){} }
+          for(var j=0;j<BENIGN.length;j++){ if(BENIGN[j].test(s)) return true; }
+          return false;
+        }
+        ['error','warn'].forEach(function(k){
+          var orig=console[k];
+          console[k]=function(){ if(isBenign(arguments)) return; return orig.apply(console,arguments); };
+        });
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/main-nu7uwxNJ.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css">
+    <style>
+      /* ================= 小青控制台 · 赛博朋克霓虹玻璃（独立浮层，不侵入 React 主应用） ================= */
+      :root{
+        --neon-purple:#a855f7; --neon-pink:#ec4899; --neon-cyan:#06b6d4; --neon-blue:#3b82f6; --neon-green:#22c55e; --neon-red:#ef4444;
+        --glass-bg:rgba(255,255,255,.07); --glass-border:rgba(255,255,255,.14); --glass-highlight:rgba(255,255,255,.18);
+        --text-primary:#f1f5f9; --text-secondary:#94a3b8;
+      }
+      #qing-fab{
+        position:fixed;left:20px;bottom:20px;z-index:999999;
+        background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(6,182,212,.3));
+        backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);
+        border:1px solid var(--glass-border);border-radius:18px;padding:12px 18px;font-size:14px;font-weight:600;
+        color:var(--text-primary);box-shadow:0 0 20px rgba(168,85,247,.4),0 8px 32px rgba(0,0,0,.4);
+        cursor:pointer;font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;letter-spacing:.3px;transition:all .3s cubic-bezier(.4,0,.2,1);
+      }
+      #qing-fab:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 28px rgba(168,85,247,.6),0 10px 36px rgba(0,0,0,.5);border-color:rgba(168,85,247,.5)}
+      #qing-fab:active{transform:translateY(0) scale(.98)}
+      #qing-panel{
+        position:fixed;left:20px;bottom:74px;z-index:999999;width:400px;max-height:82vh;overflow:auto;
+        background:var(--glass-bg);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
+        border:1px solid var(--glass-border);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 var(--glass-highlight);
+        padding:16px 18px;font-size:13px;line-height:1.6;font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
+        color:var(--text-primary);display:none;scrollbar-width:thin;scrollbar-color:rgba(168,85,247,.4) transparent;
+      }
+      #qing-panel::-webkit-scrollbar{width:6px}#qing-panel::-webkit-scrollbar-thumb{background:rgba(168,85,247,.4);border-radius:3px}
+      #qing-panel.open{display:block}
+      #qing-panel h3{margin:0 0 12px;font-size:16px;font-weight:700;background:linear-gradient(135deg,#a855f7,#06b6d4,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent;border-bottom:1px solid var(--glass-border);padding-bottom:10px;letter-spacing:.5px}
+      #qing-panel .sec{margin:13px 0;padding:10px;border:1px solid var(--glass-border);border-radius:14px;background:rgba(0,0,0,.12)}
+      #qing-panel .sec>label{color:var(--neon-cyan);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:7px}
+      #qing-panel .kbd{background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(6,182,212,.2));color:var(--neon-cyan);padding:2px 8px;border-radius:6px;font-size:11px;border:1px solid rgba(168,85,247,.25);word-break:break-all}
+      #qing-panel .chip{display:inline-block;background:rgba(255,255,255,.05);color:var(--text-secondary);border:1px solid var(--glass-border);border-radius:12px;padding:5px 12px;margin:4px 5px 0 0;cursor:pointer;font-size:12px;transition:all .25s cubic-bezier(.4,0,.2,1)}
+      #qing-panel .chip:hover{background:rgba(168,85,247,.15);color:var(--text-primary);border-color:rgba(168,85,247,.4)}
+      #qing-panel .chip.on{background:linear-gradient(135deg,rgba(168,85,247,.4),rgba(236,72,153,.4));color:#fff;border-color:rgba(168,85,247,.6);box-shadow:0 0 14px rgba(168,85,247,.4)}
+      #qing-panel .qbtn{margin-top:6px;padding:8px 14px;border:none;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(6,182,212,.3));color:#fff;font-size:13px;font-weight:600;font-family:'Noto Sans SC',sans-serif;border:1px solid rgba(168,85,247,.4);transition:all .25s cubic-bezier(.4,0,.2,1)}
+      #qing-panel .qbtn:hover{background:linear-gradient(135deg,rgba(168,85,247,.5),rgba(6,182,212,.5));box-shadow:0 0 18px rgba(168,85,247,.5);transform:translateY(-1px)}
+      #qing-panel .qbtn.ghost{background:rgba(255,255,255,.06);border-color:var(--glass-border);color:var(--text-secondary)}
+      #qing-panel .qbtn.danger{background:linear-gradient(135deg,rgba(239,68,68,.3),rgba(236,72,153,.3));border-color:rgba(239,68,68,.4)}
+      #qing-panel .msg{margin-top:8px;white-space:pre-wrap;background:rgba(0,0,0,.25);border-radius:10px;padding:9px;color:var(--text-secondary);max-height:190px;overflow:auto;border:1px solid var(--glass-border);font-size:12px;line-height:1.6}
+      #qing-panel .ver{font-size:10px;color:#64748b;background:rgba(148,163,184,.15);border:1px solid var(--glass-border);padding:1px 7px;border-radius:8px;vertical-align:middle;margin-left:4px}
+      #qing-panel .sec a,#qing-panel .sec button,#qing-panel .sec input,#qing-panel .sec select{pointer-events:auto!important}
+      #qing-panel .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+      #qing-panel .kinput{flex:1;min-width:150px;padding:7px 10px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,.25);color:var(--text-primary);font-family:'Noto Sans SC',sans-serif;font-size:12px}
+      #qing-panel .kselect{flex:1;min-width:120px;padding:7px 10px;border-radius:8px;border:1px solid var(--glass-border);background:rgba(0,0,0,.25);color:var(--text-primary);font-family:'Noto Sans SC',sans-serif;font-size:12px}
+      #qing-panel .kv{font-size:11px;color:var(--text-secondary);margin-top:5px}
+      #qing-panel .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;margin-left:4px}
+      #qing-panel .tag.ok{background:rgba(34,197,94,.18);color:var(--neon-green)}
+      #qing-panel .tag.no{background:rgba(239,68,68,.18);color:var(--neon-red)}
+      #qing-status{position:fixed;left:20px;top:20px;z-index:999998;background:var(--glass-bg);backdrop-filter:blur(12px);border:1px solid var(--glass-border);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--text-secondary);font-family:'Noto Sans SC',sans-serif;pointer-events:none}
+    </style>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <div id="qing-status">加载中…</div>
+    <button id="qing-fab">🧬 小青控制台</button>
+
+    <div id="qing-panel">
+      <h3>🧬 小青控制台 <span class="ver">v3</span></h3>
+
+      <!-- ① API 接入配置 -->
+      <div class="sec">
+        <label>① 接入 API（DeepSeek / 任意兼容多模态）</label>
+        <div class="row">
+          <input id="q-key" class="kinput" type="text" placeholder="sk-..." autocomplete="off">
+        </div>
+        <div class="row" style="margin-top:6px">
+          <select id="q-model" class="kselect"></select>
+        </div>
+        <div class="row" style="margin-top:6px;display:none" id="q-model-custom-row">
+          <input id="q-model-custom" class="kinput" type="text" placeholder="自定义模型名（如 glm-4v-plus / 任意多模态模型名）" autocomplete="off">
+        </div>
+        <div class="row" style="margin-top:6px">
+          <input id="q-baseurl" class="kinput" type="text" placeholder="https://api.deepseek.com" autocomplete="off">
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button class="qbtn" id="q-config-save">💾 保存并生效</button>
+          <button class="qbtn ghost" id="q-config-test">📡 测试连接</button>
+        </div>
+        <div id="q-config-status" class="msg" style="display:none"></div>
+      </div>
+
+      <!-- ② 视觉理解（接多模态模型后启用） -->
+      <div class="sec">
+        <label>② 视觉理解（图像）</label>
+        <div class="kv" id="q-vision-note">当前模型：读取中…</div>
+        <div class="row" style="margin-top:6px">
+          <input type="file" id="q-img" accept="image/*" style="color:var(--text-secondary);font-size:12px;flex:1">
+        </div>
+        <div class="row" style="margin-top:6px">
+          <input id="q-img-q" class="kinput" type="text" placeholder="问点什么？如：这张图里有什么">
+        </div>
+        <button class="qbtn" id="q-img-send">🖼 发送给 AI 理解</button>
+        <div id="q-img-msg" class="msg" style="display:none"></div>
+      </div>
+
+      <!-- ③ 记忆与人格 -->
+      <div class="sec">
+        <label>③ 记忆与人格</label>
+        <div class="row">
+          <span class="kbd" id="q-memdir">读取中…</span>
+        </div>
+        <div id="q-counts" style="margin-top:6px;color:var(--text-secondary)"></div>
+        <div style="margin-top:6px">当前人格：<span id="q-active" style="color:var(--neon-cyan)">读取中…</span></div>
+        <button class="qbtn ghost" id="q-mem-view">📖 查看道/法/术记忆</button>
+        <div id="q-mem-msg" class="msg" style="display:none"></div>
+      </div>
+
+      <!-- ④ 人格预设 -->
+      <div class="sec">
+        <label>④ 人格预设（MBTI 反差）</label>
+        <div id="q-presets"></div>
+
+        <label style="margin-top:10px">✨ 一键操作</label>
+        <button class="qbtn" id="q-distill">✨ 一键蒸馏我的性格</button>
+        <button class="qbtn danger" id="q-reset" style="margin-left:6px">🗑 隐私清空</button>
+        <div id="q-distill-msg" class="msg" style="display:none"></div>
+      </div>
+
+      <!-- ⑤ 声音 -->
+      <div class="sec">
+        <label>⑤ 声音（点击即应用）</label>
+        <div id="q-voice-presets" style="margin-bottom:6px"></div>
+        <div class="row">
+          <input type="file" id="q-voice-file" accept="audio/*" style="color:var(--text-secondary);font-size:12px;flex:1">
+          <button class="qbtn" id="q-voice-upload">上传复刻</button>
+        </div>
+        <div id="q-voice-msg" class="msg" style="display:none"></div>
+      </div>
+    </div>
+
+    <script>
+    /* ============================================================
+       小青控制台（零侵入）：
+       - 只作为独立浮层追加，不修改 window.WebSocket、不触碰 React 管理的节点。
+       - 配置/记忆/音色走本地 HTTP 接口；视觉理解由面板另开一条 /client-ws 连接（独立会话）。
+       - 仅调用 getLAppAdapter() 做轻量自动动作（有则做、无则跳过）。
+       ============================================================ */
+    (function () {
+      'use strict';
+      function $(s){ return document.querySelector(s); }
+      function el(id){ return document.getElementById(id); }
+      function post(url, body){
+        return fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: body?JSON.stringify(body):'{}'})
+          .then(function(r){ return r.json().catch(function(){ return {ok:false,error:'响应异常 HTTP '+r.status}; }); });
+      }
+      function get(url){ return fetch(url).then(function(r){ return r.json().catch(function(){ return {}; }); }); }
+
+      var cfg = {model:'deepseek-v4-flash', vision:false};
+
+      function toggle(){
+        var p=$('#qing-panel');
+        p.classList.toggle('open');
+        if(p.classList.contains('open')){ loadConfig(); loadStatus(); loadVoices(); }
+      }
+
+      // --- ① API 配置 ---
+      function loadConfig(){
+        get('/qing/config').then(function(d){
+          cfg.model = d.model; cfg.vision = !!d.vision_capable;
+          el('q-key').placeholder = d.has_api_key ? ('已配置 '+d.key+'（点此覆盖）…') : 'sk-... 必填';
+          el('q-baseurl').value = d.base_url || '';
+          el('q-baseurl').placeholder = d.base_url || 'https://api.deepseek.com';
+          var sel = el('q-model'); sel.innerHTML = '';
+          var known = (d.models||[]);
+          known.forEach(function(m){
+            var o=document.createElement('option'); o.value=m.id;
+            o.textContent=m.label+(m.vision?'（可看图）':'');
+            if(m.id===d.model) o.selected=true; sel.appendChild(o);
+          });
+          // 自定义模型选项
+          var customOpt=document.createElement('option'); customOpt.value='__custom__';
+          customOpt.textContent='📝 自定义模型…'; sel.appendChild(customOpt);
+          var isKnown = known.some(function(m){ return m.id===d.model; });
+          var custRow=el('q-model-custom-row');
+          if(!d.model){ sel.value=known[0]?known[0].id:''; custRow.style.display='none'; }
+          else if(!isKnown){ sel.value='__custom__'; custRow.style.display='flex'; el('q-model-custom').value=d.model; }
+          else { sel.value=d.model; custRow.style.display='none'; }
+          sel.onchange=function(){ custRow.style.display = (sel.value==='__custom__')?'flex':'none'; };
+          el('q-vision-note').innerHTML = '当前模型：<b style="color:var(--neon-cyan)">'+d.model+'</b>'+
+            (d.vision_capable ? ' &nbsp;<span class="tag ok">✓ 支持图像理解</span>' : ' &nbsp;<span class="tag no">✗ 当前不支持图像</span>');
+          setConnBadge(d);
+        });
+      }
+      function setConnBadge(d){
+        var s = el('q-config-status');
+        s.style.display='block';
+        s.innerHTML = d.connected ? '连接：<span style="color:var(--neon-green)">✓ 已配置 Key</span>（'+d.key+'）' : '连接：<span style="color:var(--neon-red)">✗ 未配置 Key</span>';
+        s.style.color = 'var(--text-secondary)';
+      }
+      function saveConfig(){
+        var m = el('q-config-status'); m.style.display='block'; m.textContent='正在校验并保存…';
+        var btn = el('q-config-save'); btn.disabled=true;
+        var model = el('q-model').value;
+        if(model==='__custom__'){ model=(el('q-model-custom').value||'').trim()||model; }
+        post('/qing/config', { key:(el('q-key').value||'').trim(), model:model, base_url:(el('q-baseurl').value||'').trim() }).then(function(d){
+          btn.disabled=false;
+          if(d.ok){ m.innerHTML='✔ '+d.note+'<br>模型：<b style="color:var(--neon-cyan)">'+d.model+'</b> · '+
+            (d.vision_capable?'<span class="tag ok">支持图像理解</span>':'<span class="tag no">不支持图像</span>'); m.style.color='var(--text-secondary)';
+            el('q-key').value=''; cfg.vision=d.vision_capable; cfg.model=d.model; loadConfig();
+          } else { m.textContent='✗ '+(d.error||'失败'); m.style.color='var(--neon-red)'; }
+        }).catch(function(e){ btn.disabled=false; m.textContent='✗ 失败：'+e; m.style.color='var(--neon-red)'; });
+      }
+      function testConfig(){
+        var m = el('q-config-status'); m.style.display='block'; m.textContent='正在测试连接…';
+        // 直接测当前 key 是否可用（balance 接口）
+        var key=(el('q-key').value||'').trim();
+        fetch('/qing/config').then(function(r){return r.json();}).then(function(d){
+          m.textContent='接口正常。若已填 Key，新版将通过实际对话验证。请先在下方发一句试试。';
+        });
+      }
+
+      // --- ② 视觉理解 ---
+      function imgToBase64(file){
+        return new Promise(function(res, rej){
+          var fr=new FileReader();
+          fr.onload=function(){ res(fr.result); }; fr.onerror=rej; fr.readAsDataURL(file);
+        });
+      }
+      function sendVision(){
+        var m=el('q-img-msg');
+        var f=el('q-img').files[0];
+        if(!f){ m.style.display='block'; m.textContent='请先选择一张图片'; return; }
+        if(!cfg.vision){ m.style.display='block'; m.textContent='⚠ 当前模型「'+cfg.model+'」不支持图像理解。请在 ① 切换到一个多模态/可看图模型（如 glm-4v）后再试。'; m.style.color='var(--neon-red)'; return; }
+        var q=(el('q-img-q').value||'').trim()||'请描述这张图片。';
+        m.style.display='block'; m.textContent='正在发送图片给模型理解…'; m.style.color='var(--text-secondary)';
+        imgToBase64(f).then(function(dataUrl){
+          var b64=dataUrl.split(',')[1]; var mime=(dataUrl.match(/^data:([^;]+)/)||[])[1]||'image/png';
+          sendVisionWS(q, b64, mime, m);
+        });
+      }
+      function sendVisionWS(q, b64, mime, box){
+        try{
+          var ws=new WebSocket('ws://'+location.host+'/client-ws');
+          var done=false;
+          ws.onopen=function(){ ws.send(JSON.stringify({type:'create-new-history'})); };
+          ws.onmessage=function(evt){
+            var d; try{ d=JSON.parse(evt.data); }catch(e){ return; }
+            if(d.type==='new-history-created'){
+              ws.send(JSON.stringify({type:'text-input', text:q, images:[{source:'upload', data:b64, mime_type:mime}]}));
+            } else if(d.type==='full-text' && d.text && d.text!=='Connection established'){
+              box.textContent='🤖 '+d.text; box.style.color='var(--neon-cyan)'; done=true;
+            } else if(d.type==='error'){
+              box.textContent='⚠ 错误：'+(d.message||''); done=true;
+            }
+          };
+          ws.onerror=function(){ if(!done){ box.textContent='⚠ WebSocket 连接失败'; done=true; } };
+          ws.onclose=function(){ if(!done){ setTimeout(function(){ box.textContent='（未收到回复，可能模型/Key 未配置或超时）'; }, 1000); } };
+          setTimeout(function(){ if(!done){ box.textContent='⏱ 超时未收到回复'; done=true; try{ws.close();}catch(e){} } }, 45000);
+        }catch(e){ box.textContent='⚠ 发送失败：'+e; }
+      }
+
+      // --- ③ 记忆 ---
+      function loadStatus(){
+        get('/qing/status').then(function(d){
+          el('q-memdir').textContent = d.mem_dir || '—';
+          var c=d.counts||{};
+          el('q-counts').innerHTML =
+            '道 <b style="color:var(--neon-purple)">'+(c.dao||0)+'</b> · 法 <b style="color:var(--neon-cyan)">'+(c.fa||0)+'</b> · 书 <b style="color:var(--neon-pink)">'+(c.shu||0)+'</b> · 经历 <b style="color:#3b82f6">'+(c.story||0)+'</b>' +
+            ' · Key ' + (d.has_api_key ? '<span style="color:var(--neon-green)">✓</span>' : '<span style="color:var(--neon-red)">✗</span>');
+          el('q-active').textContent = d.active_persona || '默认小青';
+          renderPresets(d.presets||[], d.active_persona);
+        }).catch(function(){ el('q-memdir').textContent='连接失败'; });
+      }
+      function viewMemory(){
+        var m=el('q-mem-msg'); m.style.display='block'; m.textContent='加载中…';
+        get('/qing/memory').then(function(d){
+          var fmt=function(arr){ return (arr||[]).map(function(x){ return '· '+(x.text||x.rule||''); }).join('\n') || '（暂无）'; };
+          var out='【道·偏好】\n'+fmt(d.dao)+'\n\n【法·策略】\n'+fmt(d.fa)+'\n\n【术·事实】\n'+fmt(d.shu)+'\n\n【人格】\n'+(d.persona&&d.persona.updated_at?'已更新 '+d.persona.updated_at:'暂无');
+          m.textContent=out;
+        }).catch(function(){ m.textContent='加载失败'; });
+      }
+
+      // --- ④ 人格 ---
+      function renderPresets(presets, active){
+        var box=el('q-presets'); box.innerHTML='';
+        presets.forEach(function(p){
+          var ch=document.createElement('span');
+          ch.className='chip'+(p.name===active?' on':'');
+          ch.textContent=p.name; ch.title=p.desc||'';
+          ch.onclick=function(){
+            var all=box.querySelectorAll('.chip'); all.forEach(function(c){ c.className='chip'; });
+            ch.className='chip on';
+            post('/qing/persona/apply',{name:p.name}).then(function(d){
+              if(!d||!d.ok){ ch.className='chip'; alert('切换失败：'+((d&&d.error)||'未知错误')); return; }
+              el('q-active').textContent=p.name;
+              var m=el('q-presets'); var tip=document.createElement('div'); tip.style.color='var(--neon-green)'; tip.style.fontSize='11px'; tip.style.marginTop='6px';
+              tip.textContent='✔ 已切换人格：'+p.name+'（系统提示已实时刷新）'; m.appendChild(tip);
+            }).catch(function(e){ ch.className='chip'; alert('切换失败：'+e); });
+          };
+          box.appendChild(ch);
+        });
+        if(!presets.length) box.innerHTML='<span style="color:var(--text-secondary)">未发现预置人格</span>';
+      }
+      function distill(){
+        var m=el('q-distill-msg'); m.style.display='block'; m.textContent='正在蒸馏你的习惯/性格…';
+        var btn=el('q-distill'); btn.disabled=true;
+        post('/qing/distill').then(function(d){
+          btn.disabled=false;
+          var p=(d.persona||{});
+          var mk=function(a){ return (a||[]).map(function(i){return '· '+i.text;}).join('\n') || '（暂无）'; };
+          m.textContent='蒸馏完成；喂入 '+d.fed_count+' 条\n【核心价值观】\n'+mk(p.core_values)+'\n【口头禅】\n'+mk(p.catchphrases)+'\n【兴趣/自我】\n'+mk(p.interests);
+          loadStatus();
+        }).catch(function(e){ btn.disabled=false; m.textContent='蒸馏失败：'+e; });
+      }
+      function reset(){
+        if(!confirm('确定隐私清空？将移除所有个人信息，恢复干净默认档案。')) return;
+        var m=el('q-mem-msg'); m.style.display='block'; m.textContent='正在重置…';
+        post('/qing/reset').then(function(d){
+          m.textContent = d.ok ? '✔ 隐私已清空，记忆/人格已重置为干净默认档案' : '✗ 失败：'+(d.error||'');
+          m.style.color = d.ok ? 'var(--neon-green)' : 'var(--neon-red)';
+          loadStatus();
+        }).catch(function(e){ m.style.display='block'; m.textContent='✗ 失败：'+e; m.style.color='var(--neon-red)'; });
+      }
+
+      // --- ⑤ 声音 ---
+      function loadVoices(){
+        get('/voice/presets').then(function(d){
+          var box=el('q-voice-presets'); box.innerHTML='';
+          (d.voices||[]).forEach(function(v){
+            var ch=document.createElement('span');
+            ch.className='chip'; ch.textContent=v.name; ch.title=v.desc||'';
+            ch.onclick=function(){
+              var all=box.querySelectorAll('.chip'); all.forEach(function(c){ c.className='chip'; });
+              ch.className='chip on';
+              var m=el('q-voice-msg'); m.style.display='block'; m.textContent='正在应用音色：'+v.name+'…'; m.style.color='var(--text-secondary)';
+              post('/qing/apply-voice',{voice_id:v.voice_id}).then(function(r){
+                m.textContent=(r&&r.ok)?('✔ 已应用音色：'+v.name+'（下次说话生效）'):('✗ 音色应用失败：'+((r&&r.error)||''));
+                m.style.color = (r&&r.ok)?'var(--neon-green)':'var(--neon-red)';
+              }).catch(function(e){ m.textContent='✗ 失败：'+e; m.style.color='var(--neon-red)'; });
+            };
+            box.appendChild(ch);
+          });
+        });
+      }
+      function voiceUpload(){
+        var m=el('q-voice-msg'); var f=el('q-voice-file');
+        if(!f.files||!f.files.length){ m.style.display='block'; m.textContent='请先选择音频文件'; return; }
+        var fd=new FormData(); fd.append('file',f.files[0]);
+        m.style.display='block'; m.textContent='正在上传…';
+        fetch('/voice/upload',{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){
+          m.textContent=d.ok?('✔ 上传成功：'+d.path+'\n复刻需后端运行 GPT-SoVITS 训练（可切换对应音色）'):('失败：'+(d.error||''));
+        }).catch(function(e){ m.textContent='上传失败：'+e; });
+      }
+
+      // 状态灯
+      function statusLight(){
+        var el2=el('qing-status');
+        var loaded=!!(window.getLAppAdapter&&window.getLAppAdapter()&&window.getLAppAdapter().getModel&&window.getLAppAdapter().getModel());
+        el2.textContent = loaded ? '✔ 就绪 — 左下角打开控制台' : '⚠ 模型加载中…';
+      }
+
+      // 自动动作（轻量）
+      var ACTION_SETS=[{hit:'HitAreaHead'},{hit:'HitAreaBody'},{hit:'HitAreaBody'}], i=0;
+      function autoAction(){
+        try{
+          var a=window.getLAppAdapter&&window.getLAppAdapter();
+          var m=a&&a.getModel&&a.getModel();
+          if(m&&m.startTapMotion){ m.startTapMotion(ACTION_SETS[i%ACTION_SETS.length].hit,{}); i++; }
+        }catch(e){}
+        setTimeout(autoAction, 3200+Math.random()*2800);
+      }
+
+      document.addEventListener('DOMContentLoaded', function(){
+        el('qing-fab').addEventListener('click', toggle);
+        el('q-config-save').addEventListener('click', saveConfig);
+        el('q-config-test').addEventListener('click', testConfig);
+        el('q-img-send').addEventListener('click', sendVision);
+        el('q-mem-view').addEventListener('click', viewMemory);
+        el('q-distill').addEventListener('click', distill);
+        el('q-reset').addEventListener('click', reset);
+        el('q-voice-upload').addEventListener('click', voiceUpload);
+        loadStatus(); statusLight();
+        setTimeout(autoAction, 2500);
+        setTimeout(function(){ statusLight(); loadConfig(); }, 3500);
+      });
+
+      window.qingToggle=toggle; window.qingLoadStatus=loadStatus;
+    })();
+    </script>
+  </body>
+</html>

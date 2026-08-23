@@ -1,0 +1,9 @@
+generated/
+corpus/
+__pycache__/
+*.pyc
+.DS_Store
+.snapshots/
+feishu.json
+dingtalk.json
+*.env

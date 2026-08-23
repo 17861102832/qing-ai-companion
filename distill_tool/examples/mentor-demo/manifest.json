@@ -1,0 +1,21 @@
+{
+  "slug": "wang-lao-shi-demo",
+  "persona": "mentor",
+  "built_at": "2026-04-01T12:00:00Z",
+  "sources_summarized": [
+    "wechat:one-on-one-chats",
+    "email:supervision-threads",
+    "manual:seminar-notes"
+  ],
+  "platforms": ["wechat", "email", "manual"],
+  "kit": "immortal-skill",
+  "dimensions": ["procedure", "interaction", "memory", "personality"],
+  "fingerprints": {
+    "SKILL.md": "example-hash",
+    "procedure.md": "example-hash",
+    "interaction.md": "example-hash",
+    "memory.md": "example-hash",
+    "personality.md": "example-hash",
+    "conflicts.md": "example-hash"
+  }
+}
