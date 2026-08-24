@@ -58,7 +58,7 @@
 ## 🚀 快速开始
 
 **方式 A：一键安装包（推荐给普通用户）**
-1. 从 [GitHub Releases](https://github.com/17861102832/qing-ai-companion/releases) 下载最新 `小青_安装包.zip`
+1. 从 [GitHub Releases](https://github.com/17861102832/qing-ai-companion/releases) 下载最新 `qing-ai-companion-installer.zip`
 2. 解压后双击 `Setup.exe` → 弹出「小青 · 安装向导」→ 点「开始安装」
 3. 装完自动启动并打开 `http://localhost:12393/`
 
