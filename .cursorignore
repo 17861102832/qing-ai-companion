@@ -1,0 +1,2 @@
+# Allow nothing for Cursor in this repo — stops Cursor GitHub App from posting commit checks on push.
+# See https://docs.cursor.com/en/context/ignore-files

@@ -1,0 +1,2 @@
+# Ask TRAE / TRAE-AI to not index or audit this repo — stops the TRAE GitHub App from posting commit checks on push.
+# This is the canonical ignore file used by TRAE IDE / TRAE Code Agent.
