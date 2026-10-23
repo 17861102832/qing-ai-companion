@@ -907,7 +907,7 @@ pyobjc-framework-photosui==12.1 ; platform_release >= '15.0' and sys_platform ==
     # via pyobjc
 pyobjc-framework-preferencepanes==12.1 ; sys_platform == 'darwin'
     # via pyobjc
-pyobjc-framework-pushkit==12.1 ; platform_release >= '19.0' and sys_platform == 'darwin'
+pyobjc-framework-pushkit==12.2.2 ; platform_release >= '19.0' and sys_platform == 'darwin'
     # via pyobjc
 pyobjc-framework-quartz==12.1 ; sys_platform == 'darwin'
     # via
