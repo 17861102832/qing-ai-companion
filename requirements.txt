@@ -27,7 +27,7 @@ anyio==4.12.1
     #   watchfiles
 async-timeout==5.0.1 ; python_full_version < '3.11'
     # via aiohttp
-attrs==25.4.0
+attrs==26.1.0
     # via
     #   aiohttp
     #   jsonschema
