@@ -779,7 +779,7 @@ pyobjc-framework-fileproviderui==12.1 ; platform_release >= '19.0' and sys_platf
     # via pyobjc
 pyobjc-framework-findersync==12.1 ; platform_release >= '14.0' and sys_platform == 'darwin'
     # via pyobjc
-pyobjc-framework-fsevents==12.1 ; sys_platform == 'darwin'
+pyobjc-framework-fsevents==12.2.2 ; sys_platform == 'darwin'
     # via
     #   pyobjc
     #   pyobjc-framework-coreservices
