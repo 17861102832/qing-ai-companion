@@ -942,7 +942,7 @@ pyobjc-framework-safetykit==12.1 ; platform_release >= '22.0' and sys_platform =
     # via pyobjc
 pyobjc-framework-scenekit==12.1 ; platform_release >= '11.0' and sys_platform == 'darwin'
     # via pyobjc
-pyobjc-framework-screencapturekit==12.1 ; platform_release >= '21.4' and sys_platform == 'darwin'
+pyobjc-framework-screencapturekit==12.2.2 ; platform_release >= '21.4' and sys_platform == 'darwin'
     # via pyobjc
 pyobjc-framework-screensaver==12.1 ; sys_platform == 'darwin'
     # via pyobjc
