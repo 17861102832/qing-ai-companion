@@ -702,7 +702,7 @@ pyobjc-framework-coredata==12.1 ; sys_platform == 'darwin'
     #   pyobjc-framework-syncservices
 pyobjc-framework-corehaptics==12.1 ; platform_release >= '19.0' and sys_platform == 'darwin'
     # via pyobjc
-pyobjc-framework-corelocation==12.1 ; platform_release >= '10.0' and sys_platform == 'darwin'
+pyobjc-framework-corelocation==12.2.2 ; platform_release >= '10.0' and sys_platform == 'darwin'
     # via
     #   pyobjc
     #   pyobjc-framework-cloudkit
